@@ -1,0 +1,20 @@
+grammar;
+
+pub Program: Program<'input> = {
+    <decls:Declaration*> => Self(<>),
+}
+
+pub Declaration: Declaration<'input> = {
+    <cd:ClassDeclaration> => Self::Class(<>),
+    <fd:FunctionDeclaration> => Self::Function(<>),
+    <vd:VariableDeclaration> => Self::Variable(<>),
+    <s:Statement> => Self::Statement(<>),
+}
+
+pub ClassDeclaration: ClassDeclaration<'input> = {
+    "class" <class_name:IDENTIFIER> ("<" <base:IDENTIFIER>)? "{" <members:Function*> "}" => Self { <> },
+}
+
+pub FunctionDeclaration: FunctionDeclaration<'input> = {
+    "fun" <f:Function> => Self(<>),
+}
