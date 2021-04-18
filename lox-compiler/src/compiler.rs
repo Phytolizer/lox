@@ -27,6 +27,7 @@ use self::errors::RuntimeError;
 pub(crate) mod errors;
 mod types;
 
+#[derive(Debug)]
 struct Symbol {
     name: String,
     value: Type,
@@ -35,7 +36,7 @@ struct Symbol {
 pub struct Compiler<'input> {
     program: Program<'input>,
     stack: Vec<Type>,
-    symbols: HashMap<String, Type>,
+    symbols: HashMap<String, Symbol>,
 }
 
 impl<'input> Compiler<'input> {
@@ -249,7 +250,7 @@ impl<'input> Compiler<'input> {
                 match symbol {
                     _ => return Err(RuntimeError::BadCallTarget(symbol.clone())),
                 }
-                Ok(symbol.clone())
+                Ok(symbol.value.clone())
             }
             p => {
                 if !call.rhs.is_empty() {
