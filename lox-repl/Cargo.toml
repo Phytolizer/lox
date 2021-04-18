@@ -13,5 +13,6 @@ lox = { path = "../lox" }
 lox-repl-macros = { path = "lox-repl-macros" }
 maplit = "1.0.2"
 once_cell = "1.7.2"
+parking_lot = "0.11.1"
 pretty_env_logger = "0.4.0"
 structopt = "0.3.21"

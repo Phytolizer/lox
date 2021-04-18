@@ -75,7 +75,16 @@ pub fn generate_ast(input: TokenStream) -> TokenStream {
                 .map(|f| {
                     let name = &f.name;
                     let ty = &f.kind;
-                    quote! {#name: #ty}
+                    quote! {pub(crate) #name: #ty}
+                })
+                .collect::<Vec<_>>();
+            let fields_wo_visibility = ty
+                .fields
+                .iter()
+                .map(|f| {
+                    let name = &f.name;
+                    let ty = &f.kind;
+                    quote! { #name: #ty }
                 })
                 .collect::<Vec<_>>();
             let name = format_ident!("{}{}", ty.name, base);
@@ -91,7 +100,7 @@ pub fn generate_ast(input: TokenStream) -> TokenStream {
                     #(#fields),*
                 }
                 impl #name {
-                    pub(crate) fn new(#(#fields),*) -> Self {
+                    pub(crate) fn new(#(#fields_wo_visibility),*) -> Self {
                         Self {
                             #(#field_names),*
                         }
@@ -129,7 +138,7 @@ pub fn generate_ast(input: TokenStream) -> TokenStream {
         pub(crate) enum #base {
             #(#base_variants),*
         }
-        trait #trait_name {
+        pub(crate) trait #trait_name {
             #accept_fn;
         }
         impl #trait_name for #base {
@@ -142,6 +151,7 @@ pub fn generate_ast(input: TokenStream) -> TokenStream {
         #(#types)*
         #visitor
     };
+    eprintln!("{}", output);
     output.into()
 }
 
@@ -149,7 +159,7 @@ fn define_accept_fn(base: &Ident, visitor_name: &Ident) -> (proc_macro2::TokenSt
     let trait_name = format_ident!("Accept{}Visitor", base);
     (
         quote! {
-            fn accept<R>(&self, visitor: &#visitor_name<R>) -> R
+            fn accept<R>(&self, visitor: &mut #visitor_name<R>) -> R
         },
         trait_name,
     )
@@ -167,7 +177,7 @@ fn define_visitor(base: &Ident, types: &[AstType], name: &Ident) -> proc_macro2:
             let ty_name = format_ident!("{}{}", ty.name, base);
             let var_name = format_ident!("{}", base.to_string().to_snake_case());
             quote! {
-                fn #fn_name(&self, #var_name: &#ty_name) -> R;
+                fn #fn_name(&mut self, #var_name: &#ty_name) -> R;
             }
         })
         .collect::<Vec<_>>();

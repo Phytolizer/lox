@@ -24,10 +24,10 @@ generate_ast! {
 
 pub(crate) struct ExprPrinter;
 impl ExprPrinter {
-    pub(crate) fn print(&self, expr: &Expr) -> String {
+    pub(crate) fn print(&mut self, expr: &Expr) -> String {
         expr.accept(self)
     }
-    fn parenthesize(&self, name: &str, exprs: &[&Expr]) -> String {
+    fn parenthesize(&mut self, name: &str, exprs: &[&Expr]) -> String {
         let mut s = format!("({}", name);
         for expr in exprs {
             s.push_str(&format!(" {}", expr.accept(self)));
@@ -37,16 +37,16 @@ impl ExprPrinter {
     }
 }
 impl ExprVisitor<String> for ExprPrinter {
-    fn visit_binary_expr(&self, expr: &BinaryExpr) -> String {
+    fn visit_binary_expr(&mut self, expr: &BinaryExpr) -> String {
         self.parenthesize(&expr.operator.lexeme, &[&expr.left, &expr.right])
     }
-    fn visit_unary_expr(&self, expr: &UnaryExpr) -> String {
+    fn visit_unary_expr(&mut self, expr: &UnaryExpr) -> String {
         self.parenthesize(&expr.operator.lexeme, &[&expr.right])
     }
-    fn visit_grouping_expr(&self, expr: &GroupingExpr) -> String {
+    fn visit_grouping_expr(&mut self, expr: &GroupingExpr) -> String {
         self.parenthesize("group", &[&expr.expression])
     }
-    fn visit_literal_expr(&self, expr: &LiteralExpr) -> String {
+    fn visit_literal_expr(&mut self, expr: &LiteralExpr) -> String {
         match &expr.value {
             None => String::from("nil"),
             Some(value) => value.to_string(),

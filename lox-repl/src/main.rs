@@ -9,22 +9,30 @@ use ast::ExprPrinter;
 use dialoguer::console::style;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Input;
+use interpreter::Interpreter;
 use io::Read;
 use log::error;
+use once_cell::sync::Lazy;
+use parking_lot::RwLock;
 use parser::Parser;
+use runtime_error::RuntimeError;
 use scanner::Scanner;
 use structopt::StructOpt;
 use token::Token;
 use token_type::TokenType;
 
 mod ast;
+mod interpreter;
 mod object;
 mod parser;
+mod runtime_error;
 mod scanner;
 mod token;
 mod token_type;
 
 static mut HAD_ERROR: bool = false;
+static mut HAD_RUNTIME_ERROR: bool = false;
+static INTERPRETER: Lazy<RwLock<Interpreter>> = Lazy::new(|| RwLock::new(Interpreter::new()));
 
 #[derive(StructOpt)]
 struct Opt {
@@ -57,6 +65,9 @@ fn run_file(script: PathBuf) -> io::Result<()> {
     if unsafe { HAD_ERROR } {
         process::exit(65);
     }
+    if unsafe { HAD_RUNTIME_ERROR } {
+        process::exit(70);
+    }
     Ok(())
 }
 
@@ -88,8 +99,8 @@ fn run(source: String) {
         return;
     }
 
-    if let Some(expr) = expression {
-        println!("{}", ExprPrinter.print(&expr))
+    if let Some(expression) = expression {
+        INTERPRETER.write().interpret(&expression);
     }
 }
 
@@ -108,4 +119,9 @@ fn err_at(token: &Token, message: &str) {
 fn report(line: usize, loc: &str, message: &str) {
     error!("[line {}] Error{}: {}", line, loc, message);
     unsafe { HAD_ERROR = true };
+}
+
+fn runtime_error(err: RuntimeError) {
+    error!("{}\n[line {}]", err.message(), err.token().line);
+    unsafe { HAD_RUNTIME_ERROR = true };
 }
