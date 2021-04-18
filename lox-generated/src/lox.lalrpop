@@ -1,20 +1,253 @@
+use crate::ast::*;
+
 grammar;
 
 pub Program: Program<'input> = {
-    <decls:Declaration*> => Self(<>),
+    <decls:Declaration*> => Program(<>),
 }
 
-pub Declaration: Declaration<'input> = {
-    <cd:ClassDeclaration> => Self::Class(<>),
-    <fd:FunctionDeclaration> => Self::Function(<>),
-    <vd:VariableDeclaration> => Self::Variable(<>),
-    <s:Statement> => Self::Statement(<>),
+Declaration: Declaration<'input> = {
+    <cd:ClassDeclaration> => Declaration::Class(<>),
+    <fd:FunctionDeclaration> => Declaration::Function(<>),
+    <vd:VariableDeclaration> => Declaration::Variable(<>),
+    <s:Statement> => Declaration::Statement(<>),
 }
 
-pub ClassDeclaration: ClassDeclaration<'input> = {
-    "class" <class_name:IDENTIFIER> ("<" <base:IDENTIFIER>)? "{" <members:Function*> "}" => Self { <> },
+ClassDeclaration: ClassDeclaration<'input> = {
+    "class" 
+        <class_name:IDENTIFIER> 
+        <base:("<" <IDENTIFIER>)?> 
+        "{" 
+        <members:Function*> 
+        "}" 
+            => ClassDeclaration { <> },
 }
 
-pub FunctionDeclaration: FunctionDeclaration<'input> = {
-    "fun" <f:Function> => Self(<>),
+FunctionDeclaration: FunctionDeclaration<'input> = {
+    "fun" <f:Function> => FunctionDeclaration(<>),
+}
+
+VariableDeclaration: VariableDeclaration<'input> = {
+    "var" <name:IDENTIFIER> <initializer:("=" <Expression>)?> ";" => VariableDeclaration { <> },
+}
+
+Statement: Statement<'input> = {
+    <e:ExprStatement> => Statement::Expression(<>),
+    <f:ForStatement> => Statement::For(<>),
+    <i:IfStatement> => Statement::If(<>),
+    <p:PrintStatement> => Statement::Print(<>),
+    <r:ReturnStatement> => Statement::Return(<>),
+    <w:WhileStatement> => Statement::While(<>),
+    <b:Block> => Statement::Block(<>),
+}
+
+ExprStatement: ExprStatement<'input> = {
+    <e:Expression> ";" => ExprStatement(<>),
+}
+
+ForStatement: ForStatement<'input> = {
+    "for" 
+        "(" 
+        <initializer:ForInitializer>
+        <condition:Expression?> 
+        ";" 
+        <increment:Expression?> 
+        ")" 
+        <body:B<Statement>>
+            => ForStatement { <> },
+}
+
+ForInitializer: ForInitializer<'input> = {
+    <declaration:VariableDeclaration> => ForInitializer::Declaration(<>),
+    <expression:B<ExprStatement>> => ForInitializer::Expression(<>),
+    ";" => ForInitializer::Semicolon,
+}
+
+IfStatement: IfStatement<'input> = {
+    "if" 
+        "(" 
+        <condition:Expression> 
+        ")" 
+        <body:B<Statement>> 
+            => IfStatement { <> },
+}
+
+PrintStatement: PrintStatement<'input> = {
+    "print" <value:Expression> ";" => PrintStatement(<>),
+}
+
+ReturnStatement: ReturnStatement<'input> = {
+    "return" <value:Expression?> ";" => ReturnStatement(<>),
+}
+
+WhileStatement: WhileStatement<'input> = {
+    "while" 
+        "(" 
+        <condition:Expression> 
+        ")" 
+        <body:B<Statement>> 
+            => WhileStatement { <> },
+}
+
+Block: Block<'input> = {
+    "{" <body:Declaration*> "}" => Block(<>),
+}
+
+Expression: Expression<'input> = {
+    <a:Assignment> => Expression::Assignment(<>),
+}
+
+Assignment: Assignment<'input> = {
+    <object:(<Call> ".")?> 
+        <target:IDENTIFIER> 
+        "=" 
+        <value:B<Assignment>> 
+            => Assignment::Assignment { <> },
+    <lo:LogicOr> => Assignment::LogicOr(<>),
+}
+
+LogicOr: LogicOr<'input> = {
+    <left:LogicAnd> <rest:("or" <LogicAnd>)*> => LogicOr { <> },
+}
+
+LogicAnd: LogicAnd<'input> = {
+    <left:Equality> <rest:("and" <Equality>)*> => LogicAnd { <> },
+}
+
+Equality: Equality<'input> = {
+    <left:Comparison> 
+        <rest:(<EqualityOperator> <Comparison>)*> 
+            => Equality { <> },
+}
+
+EqualityOperator: EqualityOperator = {
+    "!=" => EqualityOperator::Neq,
+    "==" => EqualityOperator::Eq,
+}
+
+Comparison: Comparison<'input> = {
+    <left:Term> <rest:(<ComparisonOperator> <Term>)*> => Comparison { <> },
+}
+
+ComparisonOperator: ComparisonOperator = {
+    ">" => ComparisonOperator::Gt,
+    ">=" => ComparisonOperator::Ge,
+    "<" => ComparisonOperator::Lt,
+    "<=" => ComparisonOperator::Le,
+}
+
+Term: Term<'input> = {
+    <left:Factor> <rest:(<TermOperator> <Factor>)*> => Term { <> },
+}
+
+TermOperator: TermOperator = {
+    "-" => TermOperator::Minus,
+    "+" => TermOperator::Plus,
+}
+
+Factor: Factor<'input> = {
+    <left:Unary> <rest:(<FactorOperator> <Unary>)*> => Factor { <> },
+}
+
+FactorOperator: FactorOperator = {
+    "/" => FactorOperator::Slash,
+    "*" => FactorOperator::Star,
+}
+
+Unary: Unary<'input> = {
+    <operator:UnaryOperator> <right:B<Unary>> => Unary::Unary { <> },
+    <c:Call> => Unary::Call(<>),
+}
+
+UnaryOperator: UnaryOperator = {
+    "!" => UnaryOperator::LogicNot,
+    "-" => UnaryOperator::Neg,
+}
+
+#[inline]
+Call: Call<'input> = {
+    <target:Primary> <rhs:CallRhs*> => Call { <> },
+}
+
+CallRhs: CallRhs<'input> = {
+    "(" <arguments:Arguments> ")" => CallRhs::Call(<>),
+    "." <member:IDENTIFIER> => CallRhs::Member(<>),
+}
+
+Primary: Primary<'input> = {
+    "true" => Primary::True,
+    "false" => Primary::False,
+    "nil" => Primary::Nil,
+    "this" => Primary::This,
+    <n:NUMBER> => Primary::Number(<>),
+    <s:STRING> => Primary::String(<>),
+    <i:IDENTIFIER> => Primary::Identifier(<>),
+    "(" <e:B<Expression>> ")" => Primary::Parenthesized(<>),
+    "super" "." <i:IDENTIFIER> => Primary::SuperMember(<>),
+}
+
+Function: Function<'input> = {
+    <name:IDENTIFIER> 
+        "(" 
+        <parameters:Parameters?> 
+        ")" 
+        <body:Block> 
+            => Function { <> },
+}
+
+Parameters: Parameters<'input> = {
+    <first:IDENTIFIER> <rest:("," <IDENTIFIER>)*> => Parameters { <> },
+}
+
+Arguments: Arguments<'input> = {
+    <first:B<Expression>> <rest:("," <Expression>)*> => Arguments { <> },
+}
+
+B<T>: Box<T> = {
+    <t:T> => Box::new(t),
+}
+
+match {
+    // Complex terminals
+    r"[a-zA-Z_][a-zA-Z0-9_]*" => IDENTIFIER,
+    r"[1-9][0-9]*|0" => NUMBER,
+    r#""[^"]*""# => STRING,
+
+    // Keywords
+    "class",
+    "fun",
+    "var",
+    "for",
+    "while",
+    "if",
+    "print",
+    "return",
+    "true",
+    "false",
+    "nil",
+    "this",
+    "super",
+    "and",
+    "or",
+
+    // Symbols
+    "{",
+    "}",
+    "(",
+    ")",
+    ".",
+    ",",
+    ";",
+    "=",
+    "<",
+    "<=",
+    ">",
+    ">=",
+    "==",
+    "!=",
+    "-",
+    "+",
+    "/",
+    "*",
+    "!",
 }
