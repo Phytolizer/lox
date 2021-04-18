@@ -13,6 +13,7 @@ use log::error;
 use scanner::Scanner;
 use structopt::StructOpt;
 
+mod ast;
 mod object;
 mod scanner;
 mod token;
