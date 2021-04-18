@@ -24,6 +24,9 @@ generate_ast! {
 
 pub(crate) struct ExprPrinter;
 impl ExprPrinter {
+    pub(crate) fn print(&self, expr: &Expr) -> String {
+        expr.accept(self)
+    }
     fn parenthesize(&self, name: &str, exprs: &[&Expr]) -> String {
         let mut s = format!("({}", name);
         for expr in exprs {

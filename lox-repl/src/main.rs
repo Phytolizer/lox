@@ -5,16 +5,21 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::process;
 
+use ast::ExprPrinter;
 use dialoguer::console::style;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Input;
 use io::Read;
 use log::error;
+use parser::Parser;
 use scanner::Scanner;
 use structopt::StructOpt;
+use token::Token;
+use token_type::TokenType;
 
 mod ast;
 mod object;
+mod parser;
 mod scanner;
 mod token;
 mod token_type;
@@ -76,13 +81,28 @@ fn run_prompt() -> io::Result<()> {
 fn run(source: String) {
     let scanner = Scanner::new(&source);
 
-    for token in scanner.scan_tokens() {
-        println!("{}", token);
+    let mut parser = Parser::new(scanner.scan_tokens());
+    let expression = parser.parse();
+
+    if unsafe { HAD_ERROR } {
+        return;
+    }
+
+    if let Some(expr) = expression {
+        println!("{}", ExprPrinter.print(&expr))
     }
 }
 
 fn err(line: usize, message: &str) {
     report(line, "", message);
+}
+
+fn err_at(token: &Token, message: &str) {
+    if token.kind == TokenType::Eof {
+        report(token.line, " at end", message);
+    } else {
+        report(token.line, &format!(" at '{}'", token.lexeme), message);
+    }
 }
 
 fn report(line: usize, loc: &str, message: &str) {

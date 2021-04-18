@@ -3,6 +3,7 @@ use std::fmt::Display;
 use crate::object::Object;
 use crate::token_type::TokenType;
 
+#[derive(Debug, Clone)]
 pub(crate) struct Token {
     pub(crate) kind: TokenType,
     pub(crate) lexeme: String,
