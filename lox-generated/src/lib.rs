@@ -1,5 +1,5 @@
-mod ast;
-mod lox;
+pub mod ast;
+pub mod lox;
 
 #[cfg(test)]
 mod tests {

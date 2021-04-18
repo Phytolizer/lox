@@ -1,8 +1,8 @@
 #[derive(Debug, PartialEq)]
-pub struct Program<'input>(pub(crate) Vec<Declaration<'input>>);
+pub struct Program<'input>(pub Vec<Declaration<'input>>);
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Declaration<'input> {
+pub enum Declaration<'input> {
     Class(ClassDeclaration<'input>),
     Function(FunctionDeclaration<'input>),
     Variable(VariableDeclaration<'input>),
@@ -10,23 +10,23 @@ pub(crate) enum Declaration<'input> {
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct ClassDeclaration<'input> {
-    pub(crate) class_name: &'input str,
-    pub(crate) base: Option<&'input str>,
-    pub(crate) members: Vec<Function<'input>>,
+pub struct ClassDeclaration<'input> {
+    pub class_name: &'input str,
+    pub base: Option<&'input str>,
+    pub members: Vec<Function<'input>>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct FunctionDeclaration<'input>(pub(crate) Function<'input>);
+pub struct FunctionDeclaration<'input>(pub Function<'input>);
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct VariableDeclaration<'input> {
-    pub(crate) name: &'input str,
-    pub(crate) initializer: Option<Expression<'input>>,
+pub struct VariableDeclaration<'input> {
+    pub name: &'input str,
+    pub initializer: Option<Expression<'input>>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Statement<'input> {
+pub enum Statement<'input> {
     Expression(ExprStatement<'input>),
     For(ForStatement<'input>),
     If(IfStatement<'input>),
@@ -37,51 +37,51 @@ pub(crate) enum Statement<'input> {
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct ExprStatement<'input>(pub(crate) Expression<'input>);
+pub struct ExprStatement<'input>(pub Expression<'input>);
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct ForStatement<'input> {
-    pub(crate) initializer: ForInitializer<'input>,
-    pub(crate) condition: Option<Expression<'input>>,
-    pub(crate) increment: Option<Expression<'input>>,
-    pub(crate) body: Box<Statement<'input>>,
+pub struct ForStatement<'input> {
+    pub initializer: ForInitializer<'input>,
+    pub condition: Option<Expression<'input>>,
+    pub increment: Option<Expression<'input>>,
+    pub body: Box<Statement<'input>>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum ForInitializer<'input> {
+pub enum ForInitializer<'input> {
     Declaration(VariableDeclaration<'input>),
     Expression(Box<ExprStatement<'input>>),
     Semicolon,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct IfStatement<'input> {
-    pub(crate) condition: Expression<'input>,
-    pub(crate) body: Box<Statement<'input>>,
+pub struct IfStatement<'input> {
+    pub condition: Expression<'input>,
+    pub body: Box<Statement<'input>>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct PrintStatement<'input>(pub(crate) Expression<'input>);
+pub struct PrintStatement<'input>(pub Expression<'input>);
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct ReturnStatement<'input>(pub(crate) Option<Expression<'input>>);
+pub struct ReturnStatement<'input>(pub Option<Expression<'input>>);
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct WhileStatement<'input> {
-    pub(crate) condition: Expression<'input>,
-    pub(crate) body: Box<Statement<'input>>,
+pub struct WhileStatement<'input> {
+    pub condition: Expression<'input>,
+    pub body: Box<Statement<'input>>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Block<'input>(pub(crate) Vec<Declaration<'input>>);
+pub struct Block<'input>(pub Vec<Declaration<'input>>);
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Expression<'input> {
+pub enum Expression<'input> {
     Assignment(Assignment<'input>),
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Assignment<'input> {
+pub enum Assignment<'input> {
     Assignment {
         object: Option<Call<'input>>,
         target: &'input str,
@@ -91,37 +91,37 @@ pub(crate) enum Assignment<'input> {
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct LogicOr<'input> {
-    pub(crate) left: LogicAnd<'input>,
-    pub(crate) rest: Vec<LogicAnd<'input>>,
+pub struct LogicOr<'input> {
+    pub left: LogicAnd<'input>,
+    pub rest: Vec<LogicAnd<'input>>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct LogicAnd<'input> {
-    pub(crate) left: Equality<'input>,
-    pub(crate) rest: Vec<Equality<'input>>,
+pub struct LogicAnd<'input> {
+    pub left: Equality<'input>,
+    pub rest: Vec<Equality<'input>>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Equality<'input> {
-    pub(crate) left: Comparison<'input>,
-    pub(crate) rest: Vec<(EqualityOperator, Comparison<'input>)>,
+pub struct Equality<'input> {
+    pub left: Comparison<'input>,
+    pub rest: Vec<(EqualityOperator, Comparison<'input>)>,
 }
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum EqualityOperator {
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum EqualityOperator {
     Neq,
     Eq,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Comparison<'input> {
-    pub(crate) left: Term<'input>,
-    pub(crate) rest: Vec<(ComparisonOperator, Term<'input>)>,
+pub struct Comparison<'input> {
+    pub left: Term<'input>,
+    pub rest: Vec<(ComparisonOperator, Term<'input>)>,
 }
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum ComparisonOperator {
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum ComparisonOperator {
     Gt,
     Ge,
     Lt,
@@ -129,31 +129,31 @@ pub(crate) enum ComparisonOperator {
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Term<'input> {
-    pub(crate) left: Factor<'input>,
-    pub(crate) rest: Vec<(TermOperator, Factor<'input>)>,
+pub struct Term<'input> {
+    pub left: Factor<'input>,
+    pub rest: Vec<(TermOperator, Factor<'input>)>,
 }
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum TermOperator {
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum TermOperator {
     Minus,
     Plus,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Factor<'input> {
-    pub(crate) left: Unary<'input>,
-    pub(crate) rest: Vec<(FactorOperator, Unary<'input>)>,
+pub struct Factor<'input> {
+    pub left: Unary<'input>,
+    pub rest: Vec<(FactorOperator, Unary<'input>)>,
 }
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum FactorOperator {
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum FactorOperator {
     Slash,
     Star,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Unary<'input> {
+pub enum Unary<'input> {
     Unary {
         operator: UnaryOperator,
         right: Box<Unary<'input>>,
@@ -161,26 +161,26 @@ pub(crate) enum Unary<'input> {
     Call(Call<'input>),
 }
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum UnaryOperator {
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum UnaryOperator {
     LogicNot,
     Neg,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Call<'input> {
-    pub(crate) target: Primary<'input>,
-    pub(crate) rhs: Vec<CallRhs<'input>>,
+pub struct Call<'input> {
+    pub target: Primary<'input>,
+    pub rhs: Vec<CallRhs<'input>>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum CallRhs<'input> {
+pub enum CallRhs<'input> {
     Call(Arguments<'input>),
     Member(&'input str),
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Primary<'input> {
+pub enum Primary<'input> {
     True,
     False,
     Nil,
@@ -192,21 +192,37 @@ pub(crate) enum Primary<'input> {
     SuperMember(&'input str),
 }
 
-#[derive(Debug, PartialEq)]
-pub(crate) struct Function<'input> {
-    pub(crate) name: &'input str,
-    pub(crate) parameters: Option<Parameters<'input>>,
-    pub(crate) body: Block<'input>,
+impl<'input> Clone for Primary<'input> {
+    fn clone(&self) -> Self {
+        match self {
+            Primary::True => Primary::True,
+            Primary::False => Primary::False,
+            Primary::Nil => Primary::Nil,
+            Primary::This => Primary::This,
+            Primary::Number(n) => Primary::Number(n),
+            Primary::String(s) => Primary::String(s),
+            Primary::Identifier(i) => Primary::Identifier(i),
+            Primary::Parenthesized(_) => panic!("cannot clone parenthesized expression!"),
+            Primary::SuperMember(m) => Primary::SuperMember(m),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Parameters<'input> {
-    pub(crate) first: &'input str,
-    pub(crate) rest: Vec<&'input str>,
+pub struct Function<'input> {
+    pub name: &'input str,
+    pub parameters: Option<Parameters<'input>>,
+    pub body: Block<'input>,
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Arguments<'input> {
-    pub(crate) first: Box<Expression<'input>>,
-    pub(crate) rest: Vec<Expression<'input>>,
+pub struct Parameters<'input> {
+    pub first: &'input str,
+    pub rest: Vec<&'input str>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Arguments<'input> {
+    pub first: Box<Expression<'input>>,
+    pub rest: Vec<Expression<'input>>,
 }
