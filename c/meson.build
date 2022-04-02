@@ -8,6 +8,7 @@ project(
 executable(
     'clox',
     'chunk.c',
+    'debug.c',
     'main.c',
     'memory.c',
 )
