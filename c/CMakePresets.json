@@ -1,0 +1,20 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "dev-base",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "flags-unix",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_C_FLAGS": "-Wall -Wextra -Wpedantic -Wmissing-prototypes"
+            }
+        }
+    ]
+}
