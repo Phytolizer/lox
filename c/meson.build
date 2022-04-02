@@ -11,4 +11,5 @@ executable(
     'debug.c',
     'main.c',
     'memory.c',
+    'value.c',
 )
