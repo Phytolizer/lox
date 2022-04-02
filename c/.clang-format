@@ -6,5 +6,6 @@ AlignAfterOpenBracket: false
 AlignEscapedNewlines: DontAlign
 IndentWidth: 4
 ContinuationIndentWidth: 8
+ColumnLimit: 100
 IndentCaseLabels: true
 IncludeBlocks: Regroup
