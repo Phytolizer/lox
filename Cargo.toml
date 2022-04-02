@@ -1,8 +1,2 @@
 [workspace]
-members = [
-    "lox",
-    "lox-repl",
-    "lox-compiler",
-    "lox-generated",
-    "lox-repl/lox-repl-macros",
-]
+members = []
